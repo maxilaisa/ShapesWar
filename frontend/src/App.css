@@ -124,7 +124,7 @@
   flex: 1;
   background: rgba(0, 0, 0, 0.5);
   border-radius: 12px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: 3px solid rgba(255, 255, 255, 0.3);
   overflow: hidden;
   position: relative;
 }
@@ -216,14 +216,15 @@
 
 .start-button {
   padding: 16px 48px;
-  font-size: 16px;
-  font-weight: 600;
+  font-size: 18px;
+  font-weight: 700;
   background: linear-gradient(90deg, #ff6b6b, #4ecdc4);
-  border: none;
+  border: 3px solid rgba(255, 255, 255, 0.5);
   border-radius: 8px;
   color: white;
   cursor: pointer;
   transition: all 0.2s;
+  box-shadow: 0 4px 15px rgba(255, 107, 107, 0.3);
 }
 
 .start-button:hover:not(:disabled) {

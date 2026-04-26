@@ -1,4 +1,4 @@
-import { AIConfig, AIState, ShapeType } from '../types';
+import { AIConfig, AIState, ShapeType, WeaponConfig, SkillConfig, SkillEffect } from '../types';
 
 export interface AISensorData {
   enemyDistance: number;
@@ -12,6 +12,12 @@ export interface AISensorData {
   skill1Ready: boolean;
   skill2Ready: boolean;
   ultimateReady: boolean;
+  myWeapon: WeaponConfig;
+  skill1Config: SkillConfig;
+  skill2Config: SkillConfig;
+  ultimateConfig: SkillConfig;
+  myShapeType: ShapeType;
+  enemyShapeType: ShapeType;
 }
 
 export type AIAction = 
@@ -106,6 +112,18 @@ export class AISystem {
   private scoreAttack(sensorData: AISensorData, cfg: AIConfig): number {
     let score = cfg.aggression * 2;
     
+    const weaponType = sensorData.myWeapon.type;
+    
+    if (weaponType.includes('bow') || weaponType.includes('spear')) {
+      if (sensorData.enemyDistance > 100 && sensorData.enemyDistance < 250) score += cfg.precision * 2;
+      if (sensorData.enemyDistance < 80) score -= 3;
+    } else if (weaponType.includes('sword') || weaponType.includes('blade') || weaponType.includes('chain')) {
+      if (sensorData.enemyDistance < 120) score += cfg.precision * 1.8;
+      if (sensorData.enemyDistance > 200) score -= 5;
+    } else if (weaponType.includes('hammer') || weaponType.includes('shield')) {
+      if (sensorData.enemyDistance < 100) score += cfg.precision * 1.5;
+    }
+    
     if (sensorData.enemyDistance < 150) score += cfg.precision * 1.5;
     if (sensorData.myHP > sensorData.enemyHP) score += cfg.greed;
     if (this.state === 'pressure') score += 5;
@@ -119,6 +137,15 @@ export class AISystem {
 
   private scoreChase(sensorData: AISensorData, cfg: AIConfig): number {
     let score = cfg.mobility * 1.5;
+    
+    const weaponType = sensorData.myWeapon.type;
+    
+    if (weaponType.includes('bow') || weaponType.includes('spear')) {
+      if (sensorData.enemyDistance > 300) score += cfg.aggression * 1.5;
+      if (sensorData.enemyDistance < 150) score -= 4;
+    } else if (weaponType.includes('sword') || weaponType.includes('blade')) {
+      if (sensorData.enemyDistance > 150) score += cfg.aggression;
+    }
     
     if (sensorData.enemyDistance > 200) score += cfg.aggression;
     if (sensorData.myHP > sensorData.enemyHP) score += cfg.greed;
@@ -172,11 +199,24 @@ export class AISystem {
     
     let score = cfg.skill * 1.5;
     
+    const skillEffects = sensorData.skill1Config.effects;
+    const hasTeleport = skillEffects.some(e => e.type === 'teleport');
+    const hasHeal = skillEffects.some(e => e.type === 'heal');
+    const hasShield = skillEffects.some(e => e.type === 'shield');
+    const hasPull = skillEffects.some(e => e.type === 'pull');
+    const hasPush = skillEffects.some(e => e.type === 'push');
+    
+    if (hasTeleport && sensorData.wallProximity < 80) score += 5;
+    if (hasHeal && sensorData.myHP < 50) score += 8;
+    if (hasShield && sensorData.enemyDistance < 120) score += 6;
+    if (hasPull && sensorData.enemyDistance > 100) score += 4;
+    if (hasPush && sensorData.enemyDistance < 100) score += 5;
+    
     if (sensorData.enemyDistance < 150) score += cfg.precision;
     if (this.state === 'combo') score += 4;
     if (this.state === 'pressure') score += 3;
     
-    if (sensorData.myHP < 20) score -= cfg.fear;
+    if (sensorData.myHP < 20 && !hasHeal && !hasShield) score -= cfg.fear;
     
     return score;
   }
@@ -186,11 +226,24 @@ export class AISystem {
     
     let score = cfg.skill * 1.3;
     
+    const skillEffects = sensorData.skill2Config.effects;
+    const hasTeleport = skillEffects.some(e => e.type === 'teleport');
+    const hasHeal = skillEffects.some(e => e.type === 'heal');
+    const hasShield = skillEffects.some(e => e.type === 'shield');
+    const hasBuff = skillEffects.some(e => e.type === 'buff');
+    const hasDebuff = skillEffects.some(e => e.type === 'debuff');
+    
+    if (hasTeleport && sensorData.wallProximity < 80) score += 5;
+    if (hasHeal && sensorData.myHP < 50) score += 8;
+    if (hasShield && sensorData.enemyDistance < 120) score += 6;
+    if (hasBuff && this.state === 'combo') score += 5;
+    if (hasDebuff && sensorData.enemyDistance < 150) score += 4;
+    
     if (sensorData.enemyDistance < 200) score += cfg.precision;
     if (this.state === 'punish') score += 4;
     if (this.state === 'combo') score += 3;
     
-    if (sensorData.myHP < 20) score -= cfg.fear;
+    if (sensorData.myHP < 20 && !hasHeal && !hasShield) score -= cfg.fear;
     
     return score;
   }
@@ -200,11 +253,24 @@ export class AISystem {
     
     let score = cfg.skill * 2;
     
-    if (sensorData.myHP < 30) score += 5;
+    const skillEffects = sensorData.ultimateConfig.effects;
+    const hasHeal = skillEffects.some(e => e.type === 'heal');
+    const hasShield = skillEffects.some(e => e.type === 'shield');
+    const hasPull = skillEffects.some(e => e.type === 'pull');
+    const hasPush = skillEffects.some(e => e.type === 'push');
+    const hasBuff = skillEffects.some(e => e.type === 'buff');
+    
+    if (hasHeal && sensorData.myHP < 40) score += 10;
+    if (hasShield && sensorData.myHP < 50) score += 8;
+    if (hasPull && sensorData.enemyDistance > 150) score += 5;
+    if (hasPush && sensorData.enemyDistance < 100) score += 6;
+    if (hasBuff && this.state === 'combo') score += 7;
+    
+    if (sensorData.myHP < 30 && !hasHeal && !hasShield) score += 5;
     if (sensorData.enemyHP < 30) score += cfg.greed * 2;
     if (sensorData.comboCount > 3) score += 4;
     
-    if (sensorData.enemyDistance > 300) score -= 3;
+    if (sensorData.enemyDistance > 300 && !hasPull) score -= 3;
     
     return score;
   }

@@ -1,4 +1,4 @@
-import { ShapeType, HitType, FighterState, ShapeStats } from '../types';
+import { ShapeType, HitType, FighterState, ShapeStats, WeaponConfig, SkillConfig, VisualEffectType } from '../types';
 
 export type { ShapeStats } from '../types';
 
@@ -17,11 +17,24 @@ export abstract class Shape {
   protected stats: ShapeStats;
   protected skill1CooldownMax: number = 4000;
   protected skill2CooldownMax: number = 5000;
+  protected weapon: WeaponConfig;
+  protected skill1Config: SkillConfig;
+  protected skill2Config: SkillConfig;
+  protected ultimateConfig: SkillConfig;
+  protected activeEffects: VisualEffectType[] = [];
+  protected passiveActive: boolean = true;
+  protected isUltimateActive: boolean = false;
 
-  constructor(id: string, type: ShapeType, stats: ShapeStats) {
+  constructor(id: string, type: ShapeType, stats: ShapeStats, weapon: WeaponConfig, skill1Config: SkillConfig, skill2Config: SkillConfig, ultimateConfig: SkillConfig) {
     this.id = id;
     this.type = type;
     this.stats = stats;
+    this.weapon = weapon;
+    this.skill1Config = skill1Config;
+    this.skill2Config = skill2Config;
+    this.ultimateConfig = ultimateConfig;
+    this.skill1CooldownMax = skill1Config.cooldown;
+    this.skill2CooldownMax = skill2Config.cooldown;
   }
 
   getState(): Partial<FighterState> {
@@ -29,8 +42,44 @@ export abstract class Shape {
       hp: this.hp,
       comboCount: this.comboCount,
       ultimateCharges: this.ultimateCharges,
-      isStunned: false
+      isStunned: false,
+      activeWeapon: this.weapon.type,
+      activeEffects: this.activeEffects,
+      passiveActive: this.passiveActive
     };
+  }
+
+  getWeapon(): WeaponConfig {
+    return this.weapon;
+  }
+
+  getSkill1Config(): SkillConfig {
+    return this.skill1Config;
+  }
+
+  getSkill2Config(): SkillConfig {
+    return this.skill2Config;
+  }
+
+  getUltimateConfig(): SkillConfig {
+    return this.ultimateConfig;
+  }
+
+  addVisualEffect(effect: VisualEffectType): void {
+    if (!this.activeEffects.includes(effect)) {
+      this.activeEffects.push(effect);
+    }
+  }
+
+  removeVisualEffect(effect: VisualEffectType): void {
+    const index = this.activeEffects.indexOf(effect);
+    if (index > -1) {
+      this.activeEffects.splice(index, 1);
+    }
+  }
+
+  clearVisualEffects(): void {
+    this.activeEffects = [];
   }
 
   takeDamage(amount: number): void {
@@ -69,12 +118,14 @@ export abstract class Shape {
   useSkill1(): void {
     if (!this.canUseSkill1()) return;
     this.skill1Cooldown = this.skill1CooldownMax;
+    this.skill1Config.visualEffects.forEach(effect => this.addVisualEffect(effect));
     this.executeSkill1();
   }
 
   useSkill2(): void {
     if (!this.canUseSkill2()) return;
     this.skill2Cooldown = this.skill2CooldownMax;
+    this.skill2Config.visualEffects.forEach(effect => this.addVisualEffect(effect));
     this.executeSkill2();
   }
 
@@ -82,7 +133,13 @@ export abstract class Shape {
     if (!this.canUseUltimate()) return;
     this.ultimateCharges = 0;
     this.ultimateCooldown = 15000;
+    this.isUltimateActive = true;
+    this.ultimateConfig.visualEffects.forEach(effect => this.addVisualEffect(effect));
     this.executeUltimate();
+    setTimeout(() => {
+      this.isUltimateActive = false;
+      this.ultimateConfig.visualEffects.forEach(effect => this.removeVisualEffect(effect));
+    }, 5000);
   }
 
   updateCooldowns(deltaTime: number): void {
@@ -110,11 +167,6 @@ export abstract class Shape {
 
   getDefense(): number {
     return this.stats.def / 100;
-  }
-
-  setCooldowns(skill1: number, skill2: number) {
-    this.skill1CooldownMax = skill1;
-    this.skill2CooldownMax = skill2;
   }
 
   protected abstract executeSkill1(): void;

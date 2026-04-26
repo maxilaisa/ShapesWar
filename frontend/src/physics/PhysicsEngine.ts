@@ -5,6 +5,8 @@ export class PhysicsEngine {
   private engine: Matter.Engine;
   private fighters: Map<string, Matter.Body> = new Map();
   private onCollision: ((event: CollisionEvent) => void) | null = null;
+  private gravityWells: Map<string, { x: number; y: number; strength: number; radius: number; duration: number }> = new Map();
+  private barriers: Map<string, Matter.Body> = new Map();
 
   constructor() {
     this.engine = Matter.Engine.create({
@@ -193,11 +195,113 @@ export class PhysicsEngine {
   }
 
   update() {
+    this.updateGravityWells();
     Matter.Engine.update(this.engine, 1000 / 60);
+  }
+
+  teleportFighter(fighterId: string, x: number, y: number) {
+    const body = this.fighters.get(fighterId);
+    if (body) {
+      Matter.Body.setPosition(body, { x, y });
+      Matter.Body.setVelocity(body, { x: 0, y: 0 });
+    }
+  }
+
+  createGravityWell(id: string, x: number, y: number, strength: number, radius: number, duration: number) {
+    this.gravityWells.set(id, { x, y, strength, radius, duration });
+    
+    setTimeout(() => {
+      this.removeGravityWell(id);
+    }, duration);
+  }
+
+  removeGravityWell(id: string) {
+    this.gravityWells.delete(id);
+  }
+
+  private updateGravityWells() {
+    this.gravityWells.forEach((well, wellId) => {
+      this.fighters.forEach((body, fighterId) => {
+        const dx = well.x - body.position.x;
+        const dy = well.y - body.position.y;
+        const distance = Math.sqrt(dx * dx + dy * dy);
+
+        if (distance < well.radius && distance > 5) {
+          const forceMagnitude = (well.strength / (distance * distance)) * 1000;
+          const force = {
+            x: (dx / distance) * forceMagnitude,
+            y: (dy / distance) * forceMagnitude
+          };
+          Matter.Body.applyForce(body, body.position, force);
+        }
+      });
+    });
+  }
+
+  createBarrier(id: string, x: number, y: number, width: number, height: number, angle: number = 0, duration: number = 3000) {
+    const barrier = Matter.Bodies.rectangle(x, y, width, height, {
+      isStatic: true,
+      label: 'barrier',
+      angle: angle,
+      isSensor: false
+    });
+
+    this.barriers.set(id, barrier);
+    Matter.Composite.add(this.engine.world, barrier);
+
+    setTimeout(() => {
+      this.removeBarrier(id);
+    }, duration);
+
+    return barrier;
+  }
+
+  removeBarrier(id: string) {
+    const barrier = this.barriers.get(id);
+    if (barrier) {
+      Matter.Composite.remove(this.engine.world, barrier);
+      this.barriers.delete(id);
+    }
+  }
+
+  applyPull(fighterId: string, targetX: number, targetY: number, strength: number) {
+    const body = this.fighters.get(fighterId);
+    if (body) {
+      const dx = targetX - body.position.x;
+      const dy = targetY - body.position.y;
+      const distance = Math.sqrt(dx * dx + dy * dy);
+
+      if (distance > 5) {
+        const force = {
+          x: (dx / distance) * strength,
+          y: (dy / distance) * strength
+        };
+        Matter.Body.applyForce(body, body.position, force);
+      }
+    }
+  }
+
+  applyPush(fighterId: string, fromX: number, fromY: number, strength: number) {
+    const body = this.fighters.get(fighterId);
+    if (body) {
+      const dx = body.position.x - fromX;
+      const dy = body.position.y - fromY;
+      const distance = Math.sqrt(dx * dx + dy * dy);
+
+      if (distance > 5) {
+        const force = {
+          x: (dx / distance) * strength,
+          y: (dy / distance) * strength
+        };
+        Matter.Body.applyForce(body, body.position, force);
+      }
+    }
   }
 
   destroy() {
     Matter.World.clear(this.engine.world, false);
     Matter.Engine.clear(this.engine);
+    this.gravityWells.clear();
+    this.barriers.clear();
   }
 }
