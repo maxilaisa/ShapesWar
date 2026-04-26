@@ -43,7 +43,7 @@ export class Renderer {
   private drawShape(graphics: PIXI.Graphics, shapeType: ShapeType, color: number, size: number) {
     graphics.clear();
     graphics.beginFill(color);
-    graphics.lineStyle(2, 0xffffff, 0.5);
+    graphics.lineStyle(3, 0xffffff, 0.6);
 
     switch (shapeType) {
       case 'circle':
@@ -90,6 +90,12 @@ export class Renderer {
         graphics.drawCircle(0, 0, size);
     }
 
+    graphics.endFill();
+    
+    // Add glow effect
+    graphics.beginFill(color, 0.3);
+    graphics.lineStyle(0);
+    graphics.drawCircle(0, 0, size * 1.2);
     graphics.endFill();
   }
 
@@ -175,28 +181,64 @@ export class Renderer {
   }
 
   createImpactEffect(x: number, y: number, color: number) {
-    const effect = new PIXI.Graphics();
-    effect.beginFill(color, 0.8);
-    effect.drawCircle(0, 0, 20);
-    effect.endFill();
-    effect.x = x;
-    effect.y = y;
-    effect.alpha = 1;
+    // Create multiple particles for better effect
+    for (let i = 0; i < 8; i++) {
+      const particle = new PIXI.Graphics();
+      particle.beginFill(color, 1);
+      particle.drawCircle(0, 0, Math.random() * 5 + 3);
+      particle.endFill();
+      particle.x = x;
+      particle.y = y;
+      particle.alpha = 1;
 
-    this.effects.addChild(effect);
+      const angle = (Math.PI * 2 / 8) * i;
+      const speed = Math.random() * 3 + 2;
+      const velocity = {
+        x: Math.cos(angle) * speed,
+        y: Math.sin(angle) * speed
+      };
 
-    const animate = () => {
-      effect.scale.x *= 1.1;
-      effect.scale.y *= 1.1;
-      effect.alpha -= 0.05;
+      this.effects.addChild(particle);
+
+      let life = 1;
+      const animate = () => {
+        particle.x += velocity.x;
+        particle.y += velocity.y;
+        particle.alpha -= 0.03;
+        particle.scale.x *= 0.95;
+        particle.scale.y *= 0.95;
+        life -= 0.03;
+        
+        if (life > 0) {
+          requestAnimationFrame(animate);
+        } else {
+          this.effects.removeChild(particle);
+        }
+      };
+      animate();
+    }
+
+    // Add shockwave ring
+    const shockwave = new PIXI.Graphics();
+    shockwave.lineStyle(3, color, 0.8);
+    shockwave.drawCircle(0, 0, 10);
+    shockwave.x = x;
+    shockwave.y = y;
+    this.effects.addChild(shockwave);
+
+    let scale = 1;
+    const animateShockwave = () => {
+      scale += 0.15;
+      shockwave.scale.set(scale);
+      shockwave.alpha -= 0.04;
       
-      if (effect.alpha > 0) {
-        requestAnimationFrame(animate);
+      if (shockwave.alpha > 0) {
+        requestAnimationFrame(animateShockwave);
       } else {
-        this.effects.removeChild(effect);
+        this.effects.removeChild(shockwave);
       }
     };
-    animate();
+    animateShockwave();
   }
 
   createUltimateEffect(id: string, color: number) {

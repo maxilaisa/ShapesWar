@@ -37,30 +37,34 @@ export function GameArena({ fighter1Type, fighter2Type, isRunning, onEnd }: Game
     const width = 800;
     const height = 600;
 
-    // Cleanup previous instances
-    if (physicsRef.current) {
-      physicsRef.current.destroy();
-      physicsRef.current = null;
-    }
-    if (rendererRef.current) {
-      rendererRef.current.destroy();
-      rendererRef.current = null;
-    }
-    if (animationRef.current) {
-      cancelAnimationFrame(animationRef.current);
-      animationRef.current = null;
+    // Only initialize once
+    if (!physicsRef.current || !rendererRef.current) {
+      const physics = new PhysicsEngine();
+      const renderer = new Renderer(canvas, width, height);
+
+      physics.initialize(width, height);
+      physics.onCollisionEvent((event) => {
+        handleCollision(event);
+      });
+
+      physicsRef.current = physics;
+      rendererRef.current = renderer;
     }
 
-    const physics = new PhysicsEngine();
-    const renderer = new Renderer(canvas, width, height);
+    // Reset HP and states
+    setFighter1HP(100);
+    setFighter2HP(100);
+    setFighter1Ultimate(0);
+    setFighter2Ultimate(0);
 
-    physics.initialize(width, height);
-    physics.onCollisionEvent((event) => {
-      handleCollision(event);
-    });
+    // Remove existing fighters
+    const physics = physicsRef.current;
+    const renderer = rendererRef.current;
 
-    physicsRef.current = physics;
-    rendererRef.current = renderer;
+    physics.removeFighter('fighter1');
+    physics.removeFighter('fighter2');
+    renderer.removeFighter('fighter1');
+    renderer.removeFighter('fighter2');
 
     const shape1Data = SHAPES_DATA.find(s => s.type === fighter1Type);
     const shape2Data = SHAPES_DATA.find(s => s.type === fighter2Type);
@@ -100,13 +104,24 @@ export function GameArena({ fighter1Type, fighter2Type, isRunning, onEnd }: Game
     }
 
     return () => {
+      // Don't destroy on shape change, only on unmount
+    };
+  }, [fighter1Type, fighter2Type]);
+
+  // Separate effect for cleanup on unmount
+  useEffect(() => {
+    return () => {
       if (animationRef.current) {
         cancelAnimationFrame(animationRef.current);
       }
-      physics.destroy();
-      renderer.destroy();
+      if (physicsRef.current) {
+        physicsRef.current.destroy();
+      }
+      if (rendererRef.current) {
+        rendererRef.current.destroy();
+      }
     };
-  }, [fighter1Type, fighter2Type]);
+  }, []);
 
   const handleCollision = (event: any) => {
     const fighter = event.fighterId === 'fighter1' ? fighter1Ref.current : fighter2Ref.current;

@@ -142,9 +142,9 @@ export class PhysicsEngine {
         body = Matter.Bodies.circle(x, y, radius, { label: id });
     }
 
-    body.friction = 0.01;
-    body.frictionAir = 0.01;
-    body.restitution = 0.9;
+    body.friction = 0;
+    body.frictionAir = 0;
+    body.restitution = 1.0;
     body.mass = 10;
     body.density = 0.001;
 
