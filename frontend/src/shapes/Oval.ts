@@ -1,31 +1,43 @@
-import { Shape } from './Shape';
+import { Shape, ShapeStats } from './Shape';
+import { ShapeType } from '../types';
 
 export class Oval extends Shape {
-  constructor(id: string) {
-    super(id, 'oval');
+  private driftMomentum: number = 0;
+
+  constructor(id: string, stats: ShapeStats) {
+    super(id, 'oval', stats);
+    this.setCooldowns(4000, 5000);
   }
 
-  getSkill1Cooldown(): number {
-    return 4000;
+  protected executeSkill1(): void {
+    // Flash Dash - instant burst in chosen direction
+    this.driftMomentum = 5;
   }
 
-  getSkill2Cooldown(): number {
-    return 5000;
+  protected executeSkill2(): void {
+    // Slip Turn - quick sharp turn that resets movement angle
+    this.driftMomentum = 3;
   }
 
-  getPassiveEffect(): string {
-    return 'Velocity Drift: Maintains speed after rebounds';
+  protected executeUltimate(): void {
+    // Hyper Orbit - moves at extreme speed around enemy dealing repeated contact hits
+    this.driftMomentum = 8;
   }
 
-  useSkill1(): void {
-    this.skillCooldowns.skill1 = this.getSkill1Cooldown();
+  protected applyPassive(): void {
+    // Velocity Drift - keeps momentum better while turning
+    // Applied via getSpeed()
   }
 
-  useSkill2(): void {
-    this.skillCooldowns.skill2 = this.getSkill2Cooldown();
+  getSpeed(): number {
+    let speed = super.getSpeed();
+    speed *= (1 + this.driftMomentum * 0.1);
+    this.driftMomentum = Math.max(0, this.driftMomentum - 0.3);
+    return speed;
   }
 
-  useUltimate(): void {
-    this.skillCooldowns.ultimate = 0;
+  update(deltaTime: number): void {
+    super.updateCooldowns(deltaTime);
+    this.applyPassive();
   }
 }

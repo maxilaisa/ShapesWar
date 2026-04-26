@@ -1,35 +1,58 @@
-import { Shape } from './Shape';
+import { Shape, ShapeStats } from './Shape';
+import { ShapeType } from '../types';
 
 export class Rhombus extends Shape {
-  constructor(id: string) {
-    super(id, 'rhombus');
+  private counterStance: boolean = false;
+  private dodgeBonus: boolean = false;
+
+  constructor(id: string, stats: ShapeStats) {
+    super(id, 'rhombus', stats);
+    this.setCooldowns(4000, 5000);
   }
 
-  getSkill1Cooldown(): number {
-    return 4000;
+  protected executeSkill1(): void {
+    // Shard Counter - counter stance. If hit during stance, retaliates strongly
+    this.counterStance = true;
+    setTimeout(() => {
+      this.counterStance = false;
+    }, 2000);
   }
 
-  getSkill2Cooldown(): number {
-    return 5000;
+  protected executeSkill2(): void {
+    // Prism Flip - quickly flips behind enemy
+    this.dodgeBonus = true;
+    setTimeout(() => {
+      this.dodgeBonus = false;
+    }, 1000);
   }
 
-  getPassiveEffect(): string {
-    return 'Mirror Reflex: Counters gain bonus knockback';
+  protected executeUltimate(): void {
+    // Mirror Storm - rapid angle strikes from multiple directions
+    this.dodgeBonus = true;
+    setTimeout(() => {
+      this.dodgeBonus = false;
+    }, 3000);
   }
 
-  getCounterBonus(): number {
-    return 1.5;
+  protected applyPassive(): void {
+    // Mirror Reflex - perfect dodge boosts next attack damage
+    // Applied in getDamage()
   }
 
-  useSkill1(): void {
-    this.skillCooldowns.skill1 = this.getSkill1Cooldown();
+  getDamage(): number {
+    let damage = super.getDamage();
+    if (this.dodgeBonus) {
+      damage *= 1.8;
+    }
+    return damage;
   }
 
-  useSkill2(): void {
-    this.skillCooldowns.skill2 = this.getSkill2Cooldown();
+  isCounterStance(): boolean {
+    return this.counterStance;
   }
 
-  useUltimate(): void {
-    this.skillCooldowns.ultimate = 0;
+  triggerCounter(): void {
+    this.counterStance = false;
+    this.dodgeBonus = true;
   }
 }

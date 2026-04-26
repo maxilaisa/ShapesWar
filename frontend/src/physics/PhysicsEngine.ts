@@ -170,12 +170,14 @@ export class PhysicsEngine {
 
   getFighterPosition(fighterId: string): { x: number; y: number } | null {
     const body = this.fighters.get(fighterId);
-    return body ? { x: body.position.x, y: body.position.y } : null;
+    if (!body) return null;
+    return { x: body.position.x, y: body.position.y };
   }
 
   getFighterVelocity(fighterId: string): { x: number; y: number } | null {
     const body = this.fighters.get(fighterId);
-    return body ? { x: body.velocity.x, y: body.velocity.y } : null;
+    if (!body) return null;
+    return { x: body.velocity.x, y: body.velocity.y };
   }
 
   removeFighter(fighterId: string) {

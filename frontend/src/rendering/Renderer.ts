@@ -152,13 +152,13 @@ export class Renderer {
   updateFighterPosition(id: string, x: number, y: number) {
     const graphics = this.fighters.get(id);
     if (graphics) {
-      this.addTrail(id, graphics.x, graphics.y);
       graphics.x = x;
       graphics.y = y;
+      this.updateTrail(id, x, y);
     }
   }
 
-  private addTrail(id: string, x: number, y: number) {
+  private updateTrail(id: string, x: number, y: number) {
     const trail = this.trails.get(id);
     if (!trail) return;
 

@@ -1,31 +1,46 @@
-import { Shape } from './Shape';
+import { Shape, ShapeStats } from './Shape';
+import { ShapeType } from '../types';
 
 export class Star extends Shape {
-  constructor(id: string) {
-    super(id, 'star');
+  private berserkMode: boolean = false;
+  private rageStack: number = 0;
+
+  constructor(id: string, stats: ShapeStats) {
+    super(id, 'star', stats);
+    this.setCooldowns(4000, 6000);
   }
 
-  getSkill1Cooldown(): number {
-    return 4000;
+  protected executeSkill1(): void {
+    // Star Impact - heavy forward smash
+    this.rageStack += 2;
   }
 
-  getSkill2Cooldown(): number {
-    return 6000;
+  protected executeSkill2(): void {
+    // Nova Spin - spins violently damaging nearby enemies
+    this.rageStack += 3;
   }
 
-  getPassiveEffect(): string {
-    return 'Spike Contact: Some impacts multi-hit';
+  protected executeUltimate(): void {
+    // Burst Chain Mode - huge speed and damage boost with combo extension
+    this.berserkMode = true;
+    this.rageStack = 10;
+    setTimeout(() => {
+      this.berserkMode = false;
+    }, 5000);
   }
 
-  useSkill1(): void {
-    this.skillCooldowns.skill1 = this.getSkill1Cooldown();
+  protected applyPassive(): void {
+    // Spike Contact - extra damage on every collision
+    // Applied in getDamage()
   }
 
-  useSkill2(): void {
-    this.skillCooldowns.skill2 = this.getSkill2Cooldown();
-  }
-
-  useUltimate(): void {
-    this.skillCooldowns.ultimate = 0;
+  getDamage(): number {
+    let damage = super.getDamage();
+    damage *= (1 + this.rageStack * 0.1);
+    if (this.berserkMode) {
+      damage *= 1.5;
+    }
+    this.rageStack = Math.max(0, this.rageStack - 0.5);
+    return damage;
   }
 }

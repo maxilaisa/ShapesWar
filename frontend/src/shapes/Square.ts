@@ -1,35 +1,45 @@
-import { Shape } from './Shape';
+import { Shape, ShapeStats } from './Shape';
+import { ShapeType } from '../types';
 
 export class Square extends Shape {
-  constructor(id: string) {
-    super(id, 'square');
+  private anchored: boolean = false;
+  private unstoppable: boolean = false;
+
+  constructor(id: string, stats: ShapeStats) {
+    super(id, 'square', stats);
+    this.setCooldowns(5000, 7000);
   }
 
-  getSkill1Cooldown(): number {
-    return 5000;
+  protected executeSkill1(): void {
+    // Fortress Slam - jumps slightly then crashes down, causing shockwave knockback
   }
 
-  getSkill2Cooldown(): number {
-    return 7000;
+  protected executeSkill2(): void {
+    // Anchor Brace - stops moving briefly and gains huge defense
+    this.anchored = true;
+    setTimeout(() => {
+      this.anchored = false;
+    }, 3000);
   }
 
-  getPassiveEffect(): string {
-    return 'Heavy Body: Reduced knockback';
+  protected executeUltimate(): void {
+    // Unstoppable Wall - rushes forward immune to knockback for several seconds
+    this.unstoppable = true;
+    setTimeout(() => {
+      this.unstoppable = false;
+    }, 5000);
   }
 
-  getKnockbackReduction(): number {
-    return 0.3;
+  protected applyPassive(): void {
+    // Heavy Body - reduced knockback from enemy hits
+    // Applied in takeDamage() via defense stat
   }
 
-  useSkill1(): void {
-    this.skillCooldowns.skill1 = this.getSkill1Cooldown();
+  takeDamage(amount: number): void {
+    let defenseMultiplier = this.getDefense();
+    if (this.anchored) defenseMultiplier *= 2;
+    const actualDamage = amount * (1 - (defenseMultiplier - 1) * 0.5);
+    this.hp = Math.max(0, this.hp - actualDamage);
   }
 
-  useSkill2(): void {
-    this.skillCooldowns.skill2 = this.getSkill2Cooldown();
-  }
-
-  useUltimate(): void {
-    this.skillCooldowns.ultimate = 0;
-  }
 }

@@ -10,11 +10,13 @@ export type ShapeType =
   | 'heart' 
   | 'diamond' 
   | 'crescent' 
-  | 'dodecahedron';
+  | 'dodecahedron'
+  | 'nonagon'
+  | 'polygon';
 
 export type AIState = 'neutral' | 'pressure' | 'defensive' | 'punish' | 'combo' | 'ultimate';
 
-export type HitType = 'light' | 'clean' | 'wall_combo' | 'counter';
+export type HitType = 'light' | 'clean' | 'wall_combo' | 'counter' | 'wall' | 'enemy';
 
 export interface AIConfig {
   aggression: number;
@@ -44,6 +46,7 @@ export interface FighterState {
     skill2: number;
     ultimate: number;
   };
+  isStunned: boolean;
 }
 
 export interface CollisionEvent {
@@ -66,4 +69,13 @@ export interface ShapeData {
   skill2Name: string;
   skill2Cooldown: number;
   ultimateName: string;
+  stats: ShapeStats;
+  role: string;
+}
+
+export interface ShapeStats {
+  hp: number;
+  dmg: number;
+  def: number;
+  spd: number;
 }

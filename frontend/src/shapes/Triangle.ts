@@ -1,31 +1,40 @@
-import { Shape } from './Shape';
+import { Shape, ShapeStats } from './Shape';
+import { ShapeType } from '../types';
 
 export class Triangle extends Shape {
-  constructor(id: string) {
-    super(id, 'triangle');
+  private critCharge: number = 0;
+
+  constructor(id: string, stats: ShapeStats) {
+    super(id, 'triangle', stats);
+    this.setCooldowns(4000, 5000);
   }
 
-  getSkill1Cooldown(): number {
-    return 4000;
+  protected executeSkill1(): void {
+    // Piercing Dash - very fast straight dash that punches through enemy
+    this.critCharge = 3;
   }
 
-  getSkill2Cooldown(): number {
-    return 5000;
+  protected executeSkill2(): void {
+    // Edge Step - short dodge step followed by counter strike
+    this.critCharge = 2;
   }
 
-  getPassiveEffect(): string {
-    return 'Critical Edge: Perfect-angle contacts do bonus impact';
+  protected executeUltimate(): void {
+    // Perfect Edge - three ultra-fast precision dashes with high crit chance
+    this.critCharge = 5;
   }
 
-  useSkill1(): void {
-    this.skillCooldowns.skill1 = this.getSkill1Cooldown();
+  protected applyPassive(): void {
+    // Critical Edge - sharp clean-angle hits deal bonus damage
+    // Applied in getDamage()
   }
 
-  useSkill2(): void {
-    this.skillCooldowns.skill2 = this.getSkill2Cooldown();
-  }
-
-  useUltimate(): void {
-    this.skillCooldowns.ultimate = 0;
+  getDamage(): number {
+    let damage = super.getDamage();
+    if (this.critCharge > 0) {
+      damage *= 1.5;
+      this.critCharge--;
+    }
+    return damage;
   }
 }

@@ -1,31 +1,39 @@
-import { Shape } from './Shape';
+import { Shape, ShapeStats } from './Shape';
+import { ShapeType } from '../types';
 
 export class Spiral extends Shape {
-  constructor(id: string) {
-    super(id, 'spiral');
+  private chaosLevel: number = 0;
+
+  constructor(id: string, stats: ShapeStats) {
+    super(id, 'spiral', stats);
+    this.setCooldowns(5000, 6000);
   }
 
-  getSkill1Cooldown(): number {
-    return 5000;
+  protected executeSkill1(): void {
+    // Vortex Pull - pulls nearby enemy toward Spiral
+    this.chaosLevel = 3;
   }
 
-  getSkill2Cooldown(): number {
-    return 6000;
+  protected executeSkill2(): void {
+    // Spiral Shift - sudden sideways movement warp
+    this.chaosLevel = 4;
   }
 
-  getPassiveEffect(): string {
-    return 'Spin Redirect: Slightly alters rebound vectors';
+  protected executeUltimate(): void {
+    // Gravity Collapse - creates pull zone dragging enemy into repeated impacts
+    this.chaosLevel = 6;
   }
 
-  useSkill1(): void {
-    this.skillCooldowns.skill1 = this.getSkill1Cooldown();
+  protected applyPassive(): void {
+    // Spin Redirect - when hit, trajectory may curve unpredictably
+    // This is handled by the physics engine checking chaosLevel
   }
 
-  useSkill2(): void {
-    this.skillCooldowns.skill2 = this.getSkill2Cooldown();
+  getChaosLevel(): number {
+    return this.chaosLevel;
   }
 
-  useUltimate(): void {
-    this.skillCooldowns.ultimate = 0;
+  reduceChaos(): void {
+    this.chaosLevel = Math.max(0, this.chaosLevel - 0.5);
   }
 }

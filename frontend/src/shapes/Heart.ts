@@ -1,44 +1,46 @@
-import { Shape } from './Shape';
+import { Shape, ShapeStats } from './Shape';
+import { ShapeType } from '../types';
 
 export class Heart extends Shape {
-  private lastEngagementTime: number = 0;
+  private lastHitTime: number = Date.now();
+  private sustainField: boolean = false;
 
-  constructor(id: string) {
-    super(id, 'heart');
+  constructor(id: string, stats: ShapeStats) {
+    super(id, 'heart', stats);
+    this.setCooldowns(5000, 6000);
   }
 
-  getSkill1Cooldown(): number {
-    return 5000;
+  protected executeSkill1(): void {
+    // Bait Shift - creates fake movement then sidesteps
   }
 
-  getSkill2Cooldown(): number {
-    return 6000;
+  protected executeSkill2(): void {
+    // Pulse Drift - escapes while restoring small HP
+    this.hp = Math.min(this.maxHp, this.hp + 5);
   }
 
-  getPassiveEffect(): string {
-    return 'Recovery Pulse: Regens slowly while disengaged';
+  protected executeUltimate(): void {
+    // Sustain Field - area aura granting healing + defense
+    this.sustainField = true;
+    setTimeout(() => {
+      this.sustainField = false;
+    }, 8000);
   }
 
-  updateRecovery(): void {
+  protected applyPassive(): void {
+    // Recovery Pulse - regenerates slowly when not hit
     const now = Date.now();
-    if (now - this.lastEngagementTime > 3000) {
-      this.hp = Math.min(100, this.hp + 0.1);
+    if (now - this.lastHitTime > 3000) {
+      this.hp = Math.min(this.maxHp, this.hp + 0.1);
     }
   }
 
-  engage(): void {
-    this.lastEngagementTime = Date.now();
-  }
-
-  useSkill1(): void {
-    this.skillCooldowns.skill1 = this.getSkill1Cooldown();
-  }
-
-  useSkill2(): void {
-    this.skillCooldowns.skill2 = this.getSkill2Cooldown();
-  }
-
-  useUltimate(): void {
-    this.skillCooldowns.ultimate = 0;
+  takeDamage(amount: number): void {
+    this.lastHitTime = Date.now();
+    let actualDamage = amount;
+    if (this.sustainField) {
+      actualDamage *= 0.7;
+    }
+    super.takeDamage(actualDamage);
   }
 }

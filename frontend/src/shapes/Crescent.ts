@@ -1,31 +1,42 @@
-import { Shape } from './Shape';
+import { Shape, ShapeStats } from './Shape';
+import { ShapeType } from '../types';
 
 export class Crescent extends Shape {
-  constructor(id: string) {
-    super(id, 'crescent');
+  private curveCharge: number = 0;
+
+  constructor(id: string, stats: ShapeStats) {
+    super(id, 'crescent', stats);
+    this.setCooldowns(5000, 5000);
   }
 
-  getSkill1Cooldown(): number {
-    return 5000;
+  protected executeSkill1(): void {
+    // Moon Hook - hooks enemy into curved pull path
+    this.curveCharge = 3;
   }
 
-  getSkill2Cooldown(): number {
-    return 5000;
+  protected executeSkill2(): void {
+    // Crescent Flip - leaps over enemy and repositions
+    this.curveCharge = 4;
   }
 
-  getPassiveEffect(): string {
-    return 'Curve Slash: Curved contact redirects enemies';
+  protected executeUltimate(): void {
+    // Lunar Rift - creates curved gravity path dragging enemy sideways
+    this.curveCharge = 6;
   }
 
-  useSkill1(): void {
-    this.skillCooldowns.skill1 = this.getSkill1Cooldown();
+  protected applyPassive(): void {
+    // Curve Slash - curving motion deals extra damage on contact
+    // Applied in getDamage() based on curveCharge
   }
 
-  useSkill2(): void {
-    this.skillCooldowns.skill2 = this.getSkill2Cooldown();
+  getDamage(): number {
+    let damage = super.getDamage();
+    damage *= (1 + this.curveCharge * 0.1);
+    this.curveCharge = Math.max(0, this.curveCharge - 0.4);
+    return damage;
   }
 
-  useUltimate(): void {
-    this.skillCooldowns.ultimate = 0;
+  getCurveCharge(): number {
+    return this.curveCharge;
   }
 }

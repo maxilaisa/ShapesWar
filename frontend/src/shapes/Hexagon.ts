@@ -1,41 +1,36 @@
-import { Shape } from './Shape';
+import { Shape, ShapeStats } from './Shape';
+import { ShapeType } from '../types';
 
 export class Hexagon extends Shape {
-  private recentHits: number[] = [];
+  private shieldStack: number = 0;
+  private lastShieldTime: number = 0;
 
-  constructor(id: string) {
-    super(id, 'hexagon');
+  constructor(id: string, stats: ShapeStats) {
+    super(id, 'hexagon', stats);
+    this.setCooldowns(5000, 6000);
   }
 
-  getSkill1Cooldown(): number {
-    return 5000;
+  protected executeSkill1(): void {
+    // Shield Pulse - pushes enemies away in close range
+    this.shieldStack = 3;
   }
 
-  getSkill2Cooldown(): number {
-    return 6000;
+  protected executeSkill2(): void {
+    // Angle Lock - temporarily slows enemy turn speed and movement
+    this.shieldStack = 2;
   }
 
-  getPassiveEffect(): string {
-    return 'Honeycomb Guard: Repeated hits do reduced knockback';
+  protected executeUltimate(): void {
+    // Fortress Grid - creates temporary bounce walls around arena zones
+    this.shieldStack = 5;
   }
 
-  getKnockbackMultiplier(): number {
+  protected applyPassive(): void {
+    // Honeycomb Guard - generates small shield every few seconds
     const now = Date.now();
-    this.recentHits = this.recentHits.filter(time => now - time < 2000);
-    const multiplier = Math.max(0.5, 1 - (this.recentHits.length * 0.1));
-    this.recentHits.push(now);
-    return multiplier;
-  }
-
-  useSkill1(): void {
-    this.skillCooldowns.skill1 = this.getSkill1Cooldown();
-  }
-
-  useSkill2(): void {
-    this.skillCooldowns.skill2 = this.getSkill2Cooldown();
-  }
-
-  useUltimate(): void {
-    this.skillCooldowns.ultimate = 0;
+    if (now - this.lastShieldTime > 5000) {
+      this.shieldStack = Math.min(3, this.shieldStack + 1);
+      this.lastShieldTime = now;
+    }
   }
 }

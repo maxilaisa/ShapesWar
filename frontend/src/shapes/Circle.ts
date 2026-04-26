@@ -1,43 +1,42 @@
-import { Shape } from './Shape';
+import { Shape, ShapeStats } from './Shape';
+import { ShapeType } from '../types';
 
 export class Circle extends Shape {
   private momentumStack: number = 0;
 
-  constructor(id: string) {
-    super(id, 'circle');
+  constructor(id: string, stats: ShapeStats) {
+    super(id, 'circle', stats);
+    this.setCooldowns(4000, 6000);
   }
 
-  getSkill1Cooldown(): number {
-    return 4000;
+  protected executeSkill1(): void {
+    // Rolling Charge - charges forward quickly with strong knockback
+    this.momentumStack += 3;
   }
 
-  getSkill2Cooldown(): number {
-    return 6000;
+  protected executeSkill2(): void {
+    // Rebound Feint - dashes into wall, instantly ricochets at new angle
+    this.momentumStack += 2;
   }
 
-  getPassiveEffect(): string {
-    return 'Momentum Build: Each rebound adds 5% force to next collision (stacks up to 3)';
+  protected executeUltimate(): void {
+    // Orbital Breaker - rapidly circles target with multiple hits, then slams
+    this.momentumStack += 5;
   }
 
-  addMomentum(): void {
-    this.momentumStack = Math.min(3, this.momentumStack + 1);
+  protected applyPassive(): void {
+    // Momentum Build - the faster Circle moves, the more damage its collisions deal
+    // This is applied in getDamage() based on momentumStack
   }
 
-  getMomentumBonus(): number {
-    const bonus = this.momentumStack * 0.05;
-    this.momentumStack = 0;
-    return bonus;
+  getDamage(): number {
+    let damage = super.getDamage();
+    damage *= (1 + this.momentumStack * 0.15);
+    this.momentumStack = Math.max(0, this.momentumStack - 0.5);
+    return damage;
   }
 
-  useSkill1(): void {
-    this.skillCooldowns.skill1 = this.getSkill1Cooldown();
-  }
-
-  useSkill2(): void {
-    this.skillCooldowns.skill2 = this.getSkill2Cooldown();
-  }
-
-  useUltimate(): void {
-    this.skillCooldowns.ultimate = 0;
+  addMomentum(amount: number): void {
+    this.momentumStack = Math.min(10, this.momentumStack + amount);
   }
 }

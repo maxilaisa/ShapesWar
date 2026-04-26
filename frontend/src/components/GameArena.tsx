@@ -162,6 +162,10 @@ export function GameArena({ fighter1Type, fighter2Type, isRunning, onEnd }: Game
 
     physics.update();
 
+    // Update shape cooldowns and passives
+    fighter1Ref.current?.update(16.67);
+    fighter2Ref.current?.update(16.67);
+
     const pos1 = physics.getFighterPosition('fighter1');
     const pos2 = physics.getFighterPosition('fighter2');
     const vel1 = physics.getFighterVelocity('fighter1');
@@ -206,18 +210,42 @@ export function GameArena({ fighter1Type, fighter2Type, isRunning, onEnd }: Game
         const action1 = ai1.decide(sensorData1);
         const action2 = ai2.decide(sensorData2);
 
+        // Execute skills based on AI decisions
+        if (action1 === 'skill1' && fighter1Ref.current?.canUseSkill1()) {
+          fighter1Ref.current.useSkill1();
+        }
+        if (action1 === 'skill2' && fighter1Ref.current?.canUseSkill2()) {
+          fighter1Ref.current.useSkill2();
+        }
+        if (action1 === 'ultimate' && fighter1Ref.current?.canUseUltimate()) {
+          fighter1Ref.current.useUltimate();
+        }
+        if (action2 === 'skill1' && fighter2Ref.current?.canUseSkill1()) {
+          fighter2Ref.current.useSkill1();
+        }
+        if (action2 === 'skill2' && fighter2Ref.current?.canUseSkill2()) {
+          fighter2Ref.current.useSkill2();
+        }
+        if (action2 === 'ultimate' && fighter2Ref.current?.canUseUltimate()) {
+          fighter2Ref.current.useUltimate();
+        }
+
         const target1 = ai1.getActionTarget(action1, pos1, pos2);
         const target2 = ai2.getActionTarget(action2, pos2, pos1);
 
+        // Apply speed modifiers from shape stats
+        const speed1 = fighter1Ref.current?.getSpeed() || 1;
+        const speed2 = fighter2Ref.current?.getSpeed() || 1;
         const forceMagnitude = 0.0005;
+
         const dx1 = target1.x - pos1.x;
         const dy1 = target1.y - pos1.y;
         const dist1 = Math.sqrt(dx1 * dx1 + dy1 * dy1);
         
         if (dist1 > 0) {
           physics.applyForce('fighter1', {
-            x: (dx1 / dist1) * forceMagnitude,
-            y: (dy1 / dist1) * forceMagnitude
+            x: (dx1 / dist1) * forceMagnitude * speed1,
+            y: (dy1 / dist1) * forceMagnitude * speed1
           });
         }
 
@@ -227,8 +255,8 @@ export function GameArena({ fighter1Type, fighter2Type, isRunning, onEnd }: Game
         
         if (dist2 > 0) {
           physics.applyForce('fighter2', {
-            x: (dx2 / dist2) * forceMagnitude,
-            y: (dy2 / dist2) * forceMagnitude
+            x: (dx2 / dist2) * forceMagnitude * speed2,
+            y: (dy2 / dist2) * forceMagnitude * speed2
           });
         }
       }
