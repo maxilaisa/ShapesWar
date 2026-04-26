@@ -665,32 +665,6 @@ export const SHAPES_DATA: {
     }
   },
   {
-    id: '13',
-    type: 'dodecahedron',
-    name: 'Dodecahedron',
-    color: '#FF6B6B',
-    description: 'The master tactician with adaptive learning abilities.',
-    role: 'Tactician',
-    stats: { hp: 100, dmg: 100, def: 100, spd: 100 },
-    passiveEffect: 'Adaptive Logic - learns opponent patterns, gains small bonuses over time',
-    skill1Name: 'Geometry Lock',
-    skill1Cooldown: 5000,
-    skill2Name: 'Pattern Read',
-    skill2Cooldown: 7000,
-    ultimateName: 'Perfect Form',
-    aiConfig: {
-      aggression: 0.5,
-      mobility: 0.5,
-      precision: 0.9,
-      chaos: 0.2,
-      greed: 0.4,
-      fear: 0.3,
-      revenge: 0.6,
-      skill: 0.9,
-      discipline: 0.9
-    }
-  },
-  {
     id: '14',
     type: 'nonagon',
     name: 'Nonagon',

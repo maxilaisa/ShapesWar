@@ -179,6 +179,11 @@ export function GameArena({ fighter1Type, fighter2Type, isRunning, onEnd }: Game
         const ai1 = ai1Ref.current;
         const ai2 = ai2Ref.current;
 
+        const shape1Data = SHAPES_DATA.find(s => s.type === fighter1Type);
+        const shape2Data = SHAPES_DATA.find(s => s.type === fighter2Type);
+
+        if (!shape1Data || !shape2Data) return;
+
         const sensorData1: AISensorData = {
           enemyDistance: Math.sqrt(Math.pow(pos2.x - pos1.x, 2) + Math.pow(pos2.y - pos1.y, 2)),
           enemyVelocity: vel2,
@@ -190,7 +195,13 @@ export function GameArena({ fighter1Type, fighter2Type, isRunning, onEnd }: Game
           ultimateCharges: fighter1Ultimate,
           skill1Ready: fighter1Ref.current?.canUseSkill1() || false,
           skill2Ready: fighter1Ref.current?.canUseSkill2() || false,
-          ultimateReady: fighter1Ref.current?.canUseUltimate() || false
+          ultimateReady: fighter1Ref.current?.canUseUltimate() || false,
+          myWeapon: shape1Data.weapon,
+          skill1Config: shape1Data.skill1Config,
+          skill2Config: shape1Data.skill2Config,
+          ultimateConfig: shape1Data.ultimateConfig,
+          myShapeType: fighter1Type,
+          enemyShapeType: fighter2Type
         };
 
         const sensorData2: AISensorData = {
@@ -204,7 +215,13 @@ export function GameArena({ fighter1Type, fighter2Type, isRunning, onEnd }: Game
           ultimateCharges: fighter2Ultimate,
           skill1Ready: fighter2Ref.current?.canUseSkill1() || false,
           skill2Ready: fighter2Ref.current?.canUseSkill2() || false,
-          ultimateReady: fighter2Ref.current?.canUseUltimate() || false
+          ultimateReady: fighter2Ref.current?.canUseUltimate() || false,
+          myWeapon: shape2Data.weapon,
+          skill1Config: shape2Data.skill1Config,
+          skill2Config: shape2Data.skill2Config,
+          ultimateConfig: shape2Data.ultimateConfig,
+          myShapeType: fighter2Type,
+          enemyShapeType: fighter1Type
         };
 
         const action1 = ai1.decide(sensorData1);
