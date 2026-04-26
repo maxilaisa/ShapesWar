@@ -3,7 +3,8 @@ import { PhysicsEngine } from '../physics/PhysicsEngine';
 import { Renderer } from '../rendering/Renderer';
 import { ShapeFactory } from '../shapes/ShapeFactory';
 import { AISystem, AISensorData, AIAction } from '../ai/AISystem';
-import { ShapeType, SHAPES_DATA } from '../data/shapes';
+import { ShapeType } from '../types';
+import { SHAPES_DATA } from '../data/shapes';
 import { Shape } from '../shapes/Shape';
 
 interface GameArenaProps {

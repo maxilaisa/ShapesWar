@@ -195,7 +195,7 @@ export class PhysicsEngine {
   }
 
   destroy() {
-    Matter.World.clear(this.engine.world);
+    Matter.World.clear(this.engine.world, false);
     Matter.Engine.clear(this.engine);
   }
 }
