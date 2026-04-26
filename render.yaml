@@ -3,10 +3,8 @@ services:
     name: shape-arena
     env: node
     plan: free
-    buildCommand: cd backend && npm install && npm run build
-    startCommand: cd backend && npm start
+    buildCommand: npm install --prefix backend && npm install --prefix frontend && npm run build --prefix frontend
+    startCommand: node backend/server.js
     envVars:
       - key: NODE_VERSION
         value: 18
-      - key: PORT
-        value: 3001

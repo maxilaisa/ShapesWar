@@ -5,7 +5,6 @@ export class Renderer {
   private app: PIXI.Application;
   private fighters: Map<string, PIXI.Graphics> = new Map();
   private trails: Map<string, PIXI.Graphics[]> = new Map();
-  private particles: PIXI.ParticleContainer | null = null;
   private effects: PIXI.Container;
 
   constructor(canvas: HTMLCanvasElement, width: number, height: number) {
@@ -19,14 +18,6 @@ export class Renderer {
 
     this.effects = new PIXI.Container();
     this.app.stage.addChild(this.effects);
-
-    this.particles = new PIXI.ParticleContainer(1000, {
-      position: true,
-      rotation: true,
-      scale: true,
-      alpha: true
-    });
-    this.app.stage.addChild(this.particles);
   }
 
   createFighter(
