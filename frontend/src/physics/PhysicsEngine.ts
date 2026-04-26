@@ -121,7 +121,7 @@ export class PhysicsEngine {
         body = Matter.Bodies.polygon(x, y, 3, radius, { label: id });
         break;
       case 'square':
-        body = Matter.Bodies.rectangle(x, y, radius * 1.8, radius * 1.8, { label: id });
+        body = Matter.Bodies.rectangle(x, y, radius * 2, radius * 2, { label: id });
         break;
       case 'oval':
         body = Matter.Bodies.circle(x, y, radius, { label: id });

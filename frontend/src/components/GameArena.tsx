@@ -37,6 +37,20 @@ export function GameArena({ fighter1Type, fighter2Type, isRunning, onEnd }: Game
     const width = 800;
     const height = 600;
 
+    // Cleanup previous instances
+    if (physicsRef.current) {
+      physicsRef.current.destroy();
+      physicsRef.current = null;
+    }
+    if (rendererRef.current) {
+      rendererRef.current.destroy();
+      rendererRef.current = null;
+    }
+    if (animationRef.current) {
+      cancelAnimationFrame(animationRef.current);
+      animationRef.current = null;
+    }
+
     const physics = new PhysicsEngine();
     const renderer = new Renderer(canvas, width, height);
 
@@ -69,6 +83,20 @@ export function GameArena({ fighter1Type, fighter2Type, isRunning, onEnd }: Game
 
       renderer.createFighter('fighter1', fighter1Type, color1, width * 0.3, height / 2, 30);
       renderer.createFighter('fighter2', fighter2Type, color2, width * 0.7, height / 2, 30);
+
+      // Add random initial velocity
+      const randomAngle1 = Math.random() * Math.PI * 2;
+      const randomAngle2 = Math.random() * Math.PI * 2;
+      const speed = 5;
+
+      physics.setVelocity('fighter1', {
+        x: Math.cos(randomAngle1) * speed,
+        y: Math.sin(randomAngle1) * speed
+      });
+      physics.setVelocity('fighter2', {
+        x: Math.cos(randomAngle2) * speed,
+        y: Math.sin(randomAngle2) * speed
+      });
     }
 
     return () => {

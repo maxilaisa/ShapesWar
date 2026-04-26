@@ -13,7 +13,8 @@ export class Renderer {
       width,
       height,
       backgroundColor: 0x0a0a0f,
-      antialias: true
+      antialias: false,
+      resolution: 1
     });
 
     this.effects = new PIXI.Container();
