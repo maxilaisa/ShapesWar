@@ -1,5 +1,4 @@
 import { Shape } from './Shape';
-import { ShapeType } from '../types';
 
 export class Crescent extends Shape {
   constructor(id: string) {

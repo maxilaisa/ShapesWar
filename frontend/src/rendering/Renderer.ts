@@ -1,5 +1,5 @@
 import * as PIXI from 'pixi.js';
-import { ShapeType, FighterState } from '../types';
+import { ShapeType } from '../types';
 
 export class Renderer {
   private app: PIXI.Application;

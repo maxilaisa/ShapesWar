@@ -47,7 +47,6 @@ export default function GameArena({ gameMode, aiConfig, isRunning }: GameArenaPr
       physics.createFighter(id, shapeType, x, y);
       renderer.createFighter(id, shapeType, ShapeFactory.getShapeColor(shapeType), x, y);
 
-      const shape = ShapeFactory.createShape(id, shapeType);
       const ai = new AISystem(aiConfig);
       aiSystems.set(id, ai);
 

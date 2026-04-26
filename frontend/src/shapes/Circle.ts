@@ -1,5 +1,4 @@
 import { Shape } from './Shape';
-import { ShapeType } from '../types';
 
 export class Circle extends Shape {
   private momentumStack: number = 0;

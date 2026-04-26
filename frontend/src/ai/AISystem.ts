@@ -1,4 +1,4 @@
-import { AIConfig, AIState, ShapeType } from '../types';
+import { AIConfig, AIState } from '../types';
 import { Shape } from '../shapes/Shape';
 
 export class AISystem {
@@ -73,7 +73,6 @@ export class AISystem {
     };
 
     const enemySpeed = Math.sqrt(enemyVelocity.x ** 2 + enemyVelocity.y ** 2);
-    const mySpeed = Math.sqrt(myVelocity.x ** 2 + myVelocity.y ** 2);
 
     // Aggression influence
     scores.engage += this.config.aggression * 2;

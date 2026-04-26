@@ -1,5 +1,4 @@
 import { Shape } from './Shape';
-import { ShapeType } from '../types';
 
 export class Dodecahedron extends Shape {
   private enemyPatterns: Map<string, number[]> = new Map();

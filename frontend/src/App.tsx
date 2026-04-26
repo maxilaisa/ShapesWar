@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import GameArena from './components/GameArena';
 import ControlPanel from './components/ControlPanel';
 import { GameMode, AIConfig } from './types';

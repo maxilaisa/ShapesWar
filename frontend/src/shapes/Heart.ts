@@ -1,5 +1,4 @@
 import { Shape } from './Shape';
-import { ShapeType } from '../types';
 
 export class Heart extends Shape {
   private lastEngagementTime: number = 0;

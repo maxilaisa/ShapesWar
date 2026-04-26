@@ -1,12 +1,11 @@
 import Matter from 'matter-js';
-import { ShapeType, FighterState, CollisionEvent } from '../types';
+import { ShapeType, CollisionEvent } from '../types';
 
 export class PhysicsEngine {
   private engine: Matter.Engine;
   private render: Matter.Render | null = null;
   private runner: Matter.Runner | null = null;
   private fighters: Map<string, Matter.Body> = new Map();
-  private walls: Matter.Body[] = [];
   private onCollision: ((event: CollisionEvent) => void) | null = null;
 
   constructor() {
@@ -44,13 +43,12 @@ export class PhysicsEngine {
       Matter.Bodies.rectangle(width + wallThickness / 2, height / 2, wallThickness, height, { isStatic: true })
     ];
     
-    this.walls = walls;
     Matter.Composite.add(this.engine.world, walls);
   }
 
   private setupCollisionHandling() {
-    Matter.Events.on(this.engine, 'collisionStart', (event) => {
-      event.pairs.forEach((pair) => {
+    Matter.Events.on(this.engine, 'collisionStart', (event: Matter.IEventCollision<Matter.Engine>) => {
+      event.pairs.forEach((pair: Matter.Pair) => {
         const bodyA = pair.bodyA;
         const bodyB = pair.bodyB;
 
@@ -58,15 +56,15 @@ export class PhysicsEngine {
         const fighterBId = bodyB.label;
 
         if (fighterAId && fighterBId) {
-          this.handleFighterCollision(fighterAId, fighterBId, pair);
+          this.handleFighterCollision(fighterAId, fighterBId);
         } else if (fighterAId || fighterBId) {
-          this.handleWallCollision(fighterAId || fighterBId, pair);
+          this.handleWallCollision(fighterAId || fighterBId);
         }
       });
     });
   }
 
-  private handleFighterCollision(id1: string, id2: string, pair: Matter.IPairCollision) {
+  private handleFighterCollision(id1: string, id2: string) {
     const velocity1 = this.fighters.get(id1)?.velocity || { x: 0, y: 0 };
     const velocity2 = this.fighters.get(id2)?.velocity || { x: 0, y: 0 };
     
@@ -97,7 +95,7 @@ export class PhysicsEngine {
     }
   }
 
-  private handleWallCollision(fighterId: string, pair: Matter.IPairCollision) {
+  private handleWallCollision(fighterId: string) {
     const body = this.fighters.get(fighterId);
     if (!body) return;
 
@@ -143,7 +141,7 @@ export class PhysicsEngine {
         body = Matter.Bodies.rectangle(x, y, radius * 1.8, radius * 1.8, { label: id });
         break;
       case 'oval':
-        body = Matter.Bodies.ellipse(x, y, radius * 1.3, radius * 0.8, { label: id });
+        body = Matter.Bodies.circle(x, y, radius, { label: id });
         break;
       case 'hexagon':
         body = Matter.Bodies.polygon(x, y, 6, radius, { label: id });
