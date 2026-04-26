@@ -1,0 +1,9 @@
+{
+  "name": "shape-arena-simulator",
+  "version": "1.0.0",
+  "description": "Shape Arena Simulator - Physics-Based Battle Game",
+  "private": true,
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

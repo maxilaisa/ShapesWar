@@ -1,5 +1,3 @@
-export type GameMode = '1v1' | 'ffa' | 'tournament' | 'replay' | 'cinematic';
-
 export type ShapeType = 
   | 'circle' 
   | 'triangle' 
@@ -14,7 +12,9 @@ export type ShapeType =
   | 'crescent' 
   | 'dodecahedron';
 
-export type AIState = 'neutral' | 'pressure' | 'combo' | 'defensive' | 'punish' | 'ultimate';
+export type AIState = 'neutral' | 'pressure' | 'defensive' | 'punish' | 'combo' | 'ultimate';
+
+export type HitType = 'light' | 'clean' | 'wall_combo' | 'counter';
 
 export interface AIConfig {
   aggression: number;
@@ -48,8 +48,22 @@ export interface FighterState {
 
 export interface CollisionEvent {
   fighterId: string;
-  hitType: 'light' | 'clean' | 'wall_combo' | 'counter';
+  hitType: HitType;
   damage: number;
   knockback: { x: number; y: number };
   timestamp: number;
+}
+
+export interface ShapeData {
+  id: string;
+  type: ShapeType;
+  name: string;
+  color: string;
+  aiConfig: AIConfig;
+  passiveEffect: string;
+  skill1Name: string;
+  skill1Cooldown: number;
+  skill2Name: string;
+  skill2Cooldown: number;
+  ultimateName: string;
 }

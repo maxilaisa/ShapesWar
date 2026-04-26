@@ -3,8 +3,8 @@ services:
     name: shape-arena
     env: node
     plan: free
-    buildCommand: cd frontend && npm install && npm run build && cd ../backend && npm install
-    startCommand: node backend/server.js
+    buildCommand: cd frontend && npm install && npm run build
+    startCommand: npx serve frontend/dist -p 3000
     envVars:
       - key: NODE_VERSION
         value: 18

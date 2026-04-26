@@ -3,8 +3,6 @@ import { ShapeType, CollisionEvent } from '../types';
 
 export class PhysicsEngine {
   private engine: Matter.Engine;
-  private render: Matter.Render | null = null;
-  private runner: Matter.Runner | null = null;
   private fighters: Map<string, Matter.Body> = new Map();
   private onCollision: ((event: CollisionEvent) => void) | null = null;
 
@@ -14,33 +12,18 @@ export class PhysicsEngine {
     });
   }
 
-  initialize(canvas: HTMLCanvasElement, width: number, height: number) {
-    this.render = Matter.Render.create({
-      canvas,
-      engine: this.engine,
-      options: {
-        width,
-        height,
-        wireframes: false,
-        background: '#0a0a0f'
-      }
-    });
-
+  initialize(width: number, height: number) {
     this.createWalls(width, height);
     this.setupCollisionHandling();
-    
-    this.runner = Matter.Runner.create();
-    Matter.Runner.run(this.runner, this.engine);
-    Matter.Render.run(this.render);
   }
 
   private createWalls(width: number, height: number) {
     const wallThickness = 50;
     const walls = [
-      Matter.Bodies.rectangle(width / 2, -wallThickness / 2, width, wallThickness, { isStatic: true }),
-      Matter.Bodies.rectangle(width / 2, height + wallThickness / 2, width, wallThickness, { isStatic: true }),
-      Matter.Bodies.rectangle(-wallThickness / 2, height / 2, wallThickness, height, { isStatic: true }),
-      Matter.Bodies.rectangle(width + wallThickness / 2, height / 2, wallThickness, height, { isStatic: true })
+      Matter.Bodies.rectangle(width / 2, -wallThickness / 2, width, wallThickness, { isStatic: true, label: 'wall' }),
+      Matter.Bodies.rectangle(width / 2, height + wallThickness / 2, width, wallThickness, { isStatic: true, label: 'wall' }),
+      Matter.Bodies.rectangle(-wallThickness / 2, height / 2, wallThickness, height, { isStatic: true, label: 'wall' }),
+      Matter.Bodies.rectangle(width + wallThickness / 2, height / 2, wallThickness, height, { isStatic: true, label: 'wall' })
     ];
     
     Matter.Composite.add(this.engine.world, walls);
@@ -55,9 +38,9 @@ export class PhysicsEngine {
         const fighterAId = bodyA.label;
         const fighterBId = bodyB.label;
 
-        if (fighterAId && fighterBId) {
+        if (fighterAId && fighterBId && fighterAId !== 'wall' && fighterBId !== 'wall') {
           this.handleFighterCollision(fighterAId, fighterBId);
-        } else if (fighterAId || fighterBId) {
+        } else if ((fighterAId && fighterAId !== 'wall') || (fighterBId && fighterBId !== 'wall')) {
           this.handleWallCollision(fighterAId || fighterBId);
         }
       });
@@ -212,12 +195,6 @@ export class PhysicsEngine {
   }
 
   destroy() {
-    if (this.runner) {
-      Matter.Runner.stop(this.runner);
-    }
-    if (this.render) {
-      Matter.Render.stop(this.render);
-    }
     Matter.World.clear(this.engine.world);
     Matter.Engine.clear(this.engine);
   }

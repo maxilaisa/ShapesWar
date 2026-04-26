@@ -14,8 +14,8 @@ import { Dodecahedron } from './Dodecahedron';
 import { ShapeType } from '../types';
 
 export class ShapeFactory {
-  static createShape(id: string, shapeType: ShapeType): Shape {
-    switch (shapeType) {
+  static createShape(id: string, type: ShapeType): Shape {
+    switch (type) {
       case 'circle':
         return new Circle(id);
       case 'triangle':
@@ -43,23 +43,5 @@ export class ShapeFactory {
       default:
         return new Circle(id);
     }
-  }
-
-  static getShapeColor(shapeType: ShapeType): number {
-    const colors: Record<ShapeType, number> = {
-      circle: 0xffffff,
-      triangle: 0xff6b6b,
-      square: 0x4ecdc4,
-      oval: 0xffe66d,
-      hexagon: 0x95e1d3,
-      spiral: 0xf38181,
-      rhombus: 0xaa96da,
-      star: 0xfcbad3,
-      heart: 0xff69b4,
-      diamond: 0x00bfff,
-      crescent: 0xc9b1ff,
-      dodecahedron: 0xffd700
-    };
-    return colors[shapeType] || 0xffffff;
   }
 }
